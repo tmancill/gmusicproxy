@@ -344,7 +344,7 @@ Here a list of the supported requests (with some restricted by the availability 
   ```
 
 
-[0]: http://gmusicproxy.net/
+[0]: https://gmusicproxy.github.io
 [1]: http://www.musicpd.org/
 [2]: http://www.videolan.org/vlc/
 [3]: https://github.com/simon-weber/gmusicapi
