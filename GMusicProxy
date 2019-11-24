@@ -727,8 +727,7 @@ class GetHandler(BaseHTTPRequestHandler):
                 logger.warning(
                     'Server denied authorization, trying to reconnect...')
                 api.logout()
-                api.login(config['email'], config[
-                          'password'], config['device_id'])
+                api.oauth_login(config['device_id'])
                 if api.is_authenticated():
                     self.handle_one_request()
                 else:
@@ -865,12 +864,12 @@ def listDevices():
         sys.exit()
 
 
-def loginGM(email, password, device_id=gmusicapi.Mobileclient.FROM_MAC_ADDRESS):
+def loginGM(device_id=gmusicapi.Mobileclient.FROM_MAC_ADDRESS):
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     api = gmusicapi.Mobileclient(debug_logging=config['debug'])
     if config['debug']:
         api.logger = logger
-    api.login(email, password, device_id)
+    api.login(device_id)
     if not api.is_authenticated():
         logger.error('Sorry, those credentials weren\'t accepted.')
         sys.exit(1)
@@ -1013,12 +1012,7 @@ if __name__ == '__main__':
     if config['keyring_service'] is not None or config['keyring_entry'] is not None:
         config['password'] = getKeyringPassword()
 
-    if config['email'] is None or config['password'] is None or len(config['email']) == 0 or len(config['password']) == 0:
-        logger.error(
-            'Please, specify the credentials of your Google account in the config file or on the command-line.')
-        sys.exit(1)
-
-    api = loginGM(config['email'], config['password'], gmusicapi.Mobileclient.FROM_MAC_ADDRESS if config[
+    api = loginGM(gmusicapi.Mobileclient.FROM_MAC_ADDRESS if config[
                   'device_id'] == '**auto**' else config['device_id'])
 
     if config['list_devices']:
