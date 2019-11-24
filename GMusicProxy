@@ -723,11 +723,11 @@ class GetHandler(BaseHTTPRequestHandler):
         try:
             BaseHTTPRequestHandler.handle_one_request(self)
         except CallFailure as e:
-            if '401 Client Error: Unauthorized' in e.message and config['device_id'] != '**auto**':
+            if '401 Client Error: Unauthorized' in e.message:
                 logger.warning(
                     'Server denied authorization, trying to reconnect...')
                 api.logout()
-                api.oauth_login(config['device_id'])
+                api.oauth_login(gmusicapi.Mobileclient.FROM_MAC_ADDRESS)
                 if api.is_authenticated():
                     self.handle_one_request()
                 else:
@@ -841,8 +841,6 @@ def getOptions(filename):
         configValues['host'] = '**auto**'
     if 'port' not in configValues:
         configValues['port'] = '9999'
-    if 'device_id' not in configValues:
-        configValues['device_id'] = '**auto**'
 
     parser.set_defaults(**configValues)
     args = parser.parse_args()
@@ -864,12 +862,12 @@ def listDevices():
         sys.exit()
 
 
-def loginGM(device_id=gmusicapi.Mobileclient.FROM_MAC_ADDRESS):
+def loginGM():
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     api = gmusicapi.Mobileclient(debug_logging=config['debug'])
     if config['debug']:
         api.logger = logger
-    api.login(device_id)
+    api.oauth_login(gmusicapi.Mobileclient.FROM_MAC_ADDRESS)
     if not api.is_authenticated():
         logger.error('Sorry, those credentials weren\'t accepted.')
         sys.exit(1)
@@ -1012,8 +1010,7 @@ if __name__ == '__main__':
     if config['keyring_service'] is not None or config['keyring_entry'] is not None:
         config['password'] = getKeyringPassword()
 
-    api = loginGM(gmusicapi.Mobileclient.FROM_MAC_ADDRESS if config[
-                  'device_id'] == '**auto**' else config['device_id'])
+    api = loginGM()
 
     if config['list_devices']:
         listDevices()
